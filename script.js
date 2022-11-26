@@ -10,10 +10,22 @@ const tConsole = document.getElementById('tConsole');
 let today = new Date();
 let timeOut = setInterval(() => {
     hour = today.getHours();
-    maxTemp = 1;
+
     if (hour < 7) {
-        //maxTemp = 
+        maxTemp = 1.5;
+    } else if (hour < 12) {
+        maxTemp = 3.5;
+    } else if (hour < 16) {
+        maxTemp = 6;
+    } else if (hour < 21) {
+        maxTemp = 5;
+    } else if (hour < 24) {
+        maxTemp = 4;
     }
 
-    let temp_env = (Math.random() + 5) * maxTemp; 
-},1000);
+    let temp_env = (Math.random() + 5) * maxTemp;
+    
+    env_temp.innerHTML = `Temperatura ambiental:
+        Celsius ${Math.round(temp_env)}° / 
+        Farenheit ${Math.round(temp_env * 1.8 + 32)}°`;
+},3000);
