@@ -47,9 +47,13 @@ let timeFast = setInterval(() => {
             max_env = 6;
             brightness_lvl = 'Alto';
         } 
+        else if (hour < 18) {
+            max_env = 6;
+            brightness_lvl = 'Medio';
+        }
         else if (hour < 21) {
             max_env = 5;
-            brightness_lvl = 'Medio';
+            brightness_lvl = 'Bajo';
         } 
         else {
             max_env = 4;
@@ -61,6 +65,7 @@ let timeFast = setInterval(() => {
         btnWeight.removeAttribute('disabled');
         btnLight.removeAttribute('disabled');
         btnExtract.removeAttribute('disabled');
+
     }
     else {
         max_env = 0;
@@ -83,9 +88,7 @@ let timeFast = setInterval(() => {
         btnOven.setAttribute('disabled', true);
         btnWeight.setAttribute('disabled', true);
         btnLight.setAttribute('disabled', true);
-        btnExtract.setAttribute('disabled', true);
-
-        Light.setText('WARNING');
+        btnExtract.setAttribute('disabled', true);  
     }
 
 
@@ -108,6 +111,7 @@ let timeFast = setInterval(() => {
             Celsius ${temp_stove}° / 
             Farenheit ${Math.round(temp_stove * 1.8 + 32)}°F`
         );
+        smoke_lvl += randomIntBetween(5,10);
     }
 
     if (Oven.isOn) {
@@ -116,6 +120,12 @@ let timeFast = setInterval(() => {
             Celsius ${temp_oven}° / 
             Farenheit ${Math.round(temp_oven * 1.8 + 32)}°F`
         );
+        smoke_lvl += randomIntBetween(3,5);
+    }
+
+    if (!Oven.isOn && !Stove.isOn) {
+        if (smoke_lvl > 0) smoke_lvl -= randomIntBetween(2,6);
+        else smoke_lvl = 0;
     }
 
     if (Weight.isOn) {
@@ -126,16 +136,31 @@ let timeFast = setInterval(() => {
         Light.setText(`Luces encendidas`);
     }
 
+    
+    if (smoke_lvl > 45) {
+        Extractor.setOn(true);
+        btnExtract.innerHTML  = "Detener";
+        tConsole.innerHTML += `Extractor is now: ON<br>`;
+    }
     if (Extractor.isOn) {
         Extractor.setText(`Extrayendo...`);
+        smoke_lvl -= randomIntBetween(12, 18);
+
+        if (smoke_lvl < 20) {
+            Extractor.setOn(false);
+            btnExtract.innerHTML  = "Extraer";
+            tConsole.innerHTML += `Extractor is now: OFF<br>`;
+        }
     }
 
     // Print in console
-    tConsole.innerHTML += `
-        <b>[${today.toISOString().substring(0, 10)} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}]</b>
-        Env_Temp: ${Math.round(temp_env)} | Smk_Lvl: ${smoke_lvl} | Bright_Lvl: ${brightness_lvl}
-        <br>
-    `;
+    if (!stop) {
+        tConsole.innerHTML += `
+            <b>[${today.toISOString().substring(0, 10)} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}]</b>
+            Env_Temp: ${Math.round(temp_env)} | Smk_Lvl: ${smoke_lvl} | Bright_Lvl: ${brightness_lvl}
+            <br>
+        `;
+    }
 
     // Scroll the console to bottom
     tConsole.scrollTop = tConsole.scrollHeight;
@@ -192,7 +217,7 @@ btnStop.addEventListener('click', (e) => {
 // Send commands
 formConsole.addEventListener('submit', (e) => {
     e.preventDefault();
-    
+
     if(inpConsole.value == '') return;
 
     switch(inpConsole.value.toUpperCase().trim()) {
